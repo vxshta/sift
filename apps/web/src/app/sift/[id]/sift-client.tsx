@@ -930,40 +930,7 @@ export default function SiftSessionPageClient({ id }: SiftSessionPageClientProps
       </div>
 
         {/* Printable Content */}
-        <div className="hidden print:block text-black font-jakarta print-safe">
-            <style jsx global>{`
-                @media print {
-                    /* Hide everything by default, then show .print:block */
-                    body * {
-                        visibility: hidden;
-                    }
-                    .print\\:block, .print\\:block * {
-                        visibility: visible;
-                    }
-                    .print\\:block {
-                        position: absolute;
-                        left: 0;
-                        top: 0;
-                        width: 100%;
-                    }
-                    
-                    /* Hide browser extension elements and common overlays */
-                    #grammarly-shadow-root, 
-                    .grammarly-extension,
-                    [data-grammarly-shadow-root],
-                    iframe,
-                    .loom-extension,
-                    #loom-companion-mv3,
-                    .crisp-client,
-                    #crisp-chatbox,
-                    .intercom-lightweight-app,
-                    #intercom-container {
-                        display: none !important;
-                        visibility: hidden !important;
-                        opacity: 0 !important;
-                    }
-                }
-            `}</style>
+        <div className="hidden print:block text-black font-jakarta">
             <table className="w-full">
                 <thead><tr><td><div className="h-[15mm]"></div></td></tr></thead>
                 <tbody><tr><td><div className="space-y-8">
