@@ -360,7 +360,7 @@ export default function SiftSessionPageClient({ id }: SiftSessionPageClientProps
                                     <HugeiconsIcon icon={Book01Icon} className="h-5 w-5" />
                                     Part of Learning Path
                                 </div>
-                                <h3 className="text-lg font-bold">{learningPath.title}</h3>
+                                <h3 className="text-lg font-bold line-clamp-2">{learningPath.title}</h3>
                                 <p className="text-sm text-muted-foreground">
                                    Module {learningPath.sifts.find((s: any) => s.siftId === id)?.order + 1} of {learningPath.sifts.length}
                                 </p>
