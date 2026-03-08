@@ -930,7 +930,40 @@ export default function SiftSessionPageClient({ id }: SiftSessionPageClientProps
       </div>
 
         {/* Printable Content */}
-        <div className="hidden print:block text-black font-jakarta">
+        <div className="hidden print:block text-black font-jakarta print-safe">
+            <style jsx global>{`
+                @media print {
+                    /* Hide everything by default, then show .print:block */
+                    body * {
+                        visibility: hidden;
+                    }
+                    .print\\:block, .print\\:block * {
+                        visibility: visible;
+                    }
+                    .print\\:block {
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        width: 100%;
+                    }
+                    
+                    /* Hide browser extension elements and common overlays */
+                    #grammarly-shadow-root, 
+                    .grammarly-extension,
+                    [data-grammarly-shadow-root],
+                    iframe,
+                    .loom-extension,
+                    #loom-companion-mv3,
+                    .crisp-client,
+                    #crisp-chatbox,
+                    .intercom-lightweight-app,
+                    #intercom-container {
+                        display: none !important;
+                        visibility: hidden !important;
+                        opacity: 0 !important;
+                    }
+                }
+            `}</style>
             <table className="w-full">
                 <thead><tr><td><div className="h-[15mm]"></div></td></tr></thead>
                 <tbody><tr><td><div className="space-y-8">
@@ -940,7 +973,7 @@ export default function SiftSessionPageClient({ id }: SiftSessionPageClientProps
                     <img src="/sift-mascot.png" alt="Sift" className="h-24 w-24 opacity-80" />
                 </div>
                 <h1 className="text-5xl font-extrabold tracking-tight">{titlePrefix}</h1>
-                <h2 className="text-5xl font-extrabold tracking-tight">{sift.source?.title}</h2>
+                <h2 className="text-5xl font-extrabold tracking-tight line-clamp-2">{sift.source?.title}</h2>
                 <div className="flex flex-col items-center justify-center gap-2 text-gray-500 pt-4">
                     <div className="flex items-center gap-2">
                          <span className="font-semibold">{sift.questions.length} Questions</span>

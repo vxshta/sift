@@ -66,11 +66,13 @@ export default function AIPageClient() {
                      finalData = { sections: parsedData, summary: "Generated from AI Studio" };
                 }
                 
-                const { siftId } = await createImportedLearningPathAction(topic || "AI Learning Path", finalData);
+                const titleToUse = finalData.title || (topic.length > 50 ? topic.substring(0, 50) + "..." : topic) || "AI Learning Path";
+                const { siftId } = await createImportedLearningPathAction(titleToUse, finalData);
                 toast.success("Learning path created!");
                 router.push(`/sift/${siftId}`);
             } else {
-                const { siftId } = await createImportedSourceAction(topic || "AI Generated Sift", parsedData);
+                const titleToUse = parsedData.title || (topic.length > 50 ? topic.substring(0, 50) + "..." : topic) || "AI Generated Sift";
+                const { siftId } = await createImportedSourceAction(titleToUse, parsedData);
                 toast.success("Sift created!");
                 router.push(`/sift/${siftId}`);
             }

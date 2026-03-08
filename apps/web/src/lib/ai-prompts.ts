@@ -4,6 +4,7 @@ Your task is to analyze the provided text and generate a set of high-quality Mul
 
 Output Format: JSON Object
 {
+  "title": "A short, descriptive title for this study set (max 5-7 words)",
   "questions": [
     {
       "question": "The question text",
@@ -44,6 +45,7 @@ Your task is to create a comprehensive, structured learning path for a given top
 
 Output Format: JSON Object
 {
+  "title": "A short, descriptive title for this learning path (max 5-7 words)",
   "summary": "A brief summary of the key concepts covered in this module (max 2 sentences). Used for tracking progress.",
   "sections": [
     {

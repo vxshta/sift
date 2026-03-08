@@ -102,8 +102,9 @@ export async function createTopicSourceAction(topic: string) {
     }
     
     // 1. Create Source
+    const title = topic.length > 50 ? topic.substring(0, 50) + "..." : topic;
     const sourceId = await createSource({
-        title: topic,
+        title,
         fileName: "learning-path.txt",
         type: "text",
         content: `Learning Path for: ${topic}`,
