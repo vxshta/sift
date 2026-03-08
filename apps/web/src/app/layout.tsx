@@ -104,7 +104,7 @@ export default function RootLayout({
         </div> */}
         
         <Providers>
-          <div className="grid min-h-svh grid-rows-[auto_1fr]">
+          <div className="flex flex-col min-h-svh">
             <Analytics />
             <Header />
             <main className="wrapperx">
