@@ -305,10 +305,10 @@ export default function SiftSessionPageClient({ id }: SiftSessionPageClientProps
             </div>
 
             <div className="space-y-2 bg-background dark:bg-transparent rounded-xl">
-                <div className="flex items-start justify-between gap-4">
-                    <h1 className="text-2xl md:text-4xl font-bold tracking-tight line-clamp-2">{`${titlePrefix}${sift.source?.title ?? ""}`}</h1>
+                <div className="flex items-start justify-between gap-4 py-1">
+                    <h1 className="text-2xl md:text-4xl font-bold tracking-tight line-clamp-2 pb-1">{`${titlePrefix}${sift.source?.title ?? ""}`}</h1>
                     {sift.isPublic && (
-                        <Badge variant="secondary" className="bg-primary/5 text-primary border-primary/10 shrink-0">
+                        <Badge variant="secondary" className="bg-primary/5 text-primary border-primary/10 shrink-0 mt-1">
                             Public
                         </Badge>
                     )}
