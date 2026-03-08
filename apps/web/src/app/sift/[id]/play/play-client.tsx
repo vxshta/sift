@@ -316,7 +316,7 @@ export default function SiftPlayPageClient({ id }: SiftPlayPageClientProps) {
     const incorrectCount = sift.questions.length - correctCount;
 
     return (
-        <div className="flex items-center justify-center h-full p-0 w-full animate-in fade-in zoom-in duration-300">
+        <div className="flex items-center justify-center min-h-[80vh] p-0 w-full animate-in fade-in zoom-in duration-300">
             <Card className="w-full max-w-5xl grid md:grid-cols-2 overflow-hidden border-0 ring-1 ring-border py-0 ">
                 {/* Left Column: Score & Chart */}
                 <div className="flex flex-col items-center justify-center p-6 md:px-12 md:py-12 space-y-8 text-center relative overflow-hidden">
@@ -373,7 +373,7 @@ export default function SiftPlayPageClient({ id }: SiftPlayPageClientProps) {
                 {/* Right Column: Stats & Actions */}
                 <div className="flex flex-col p-8 pt-0 md:pt-8 md:pl-3 md:pr-8 md:py-8 space-y-6 bg-card">
                     <div className="flex-1 grid grid-cols-2 gap-4 content-center">
-                        <div className="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl border bg-card/50 hover:bg-card/80 transition-colors text-center">
+                        <div className="flex flex-col gap-3 p-5 rounded-2xl border bg-card/50 hover:bg-card/80 transition-colors">
                             <div className="flex items-center gap-3 text-sm text-muted-foreground font-medium">
                                 <div className="p-2 rounded-lg bg-green-500/10 text-green-600">
                                     <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-5 w-5" />
@@ -383,7 +383,7 @@ export default function SiftPlayPageClient({ id }: SiftPlayPageClientProps) {
                             <p className="text-3xl font-bold tracking-tight">{correctCount}</p>
                         </div>
                         
-                        <div className="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl border bg-card/50 hover:bg-card/80 transition-colors text-center">
+                        <div className="flex flex-col gap-3 p-5 rounded-2xl border bg-card/50 hover:bg-card/80 transition-colors">
                             <div className="flex items-center gap-3 text-sm text-muted-foreground font-medium">
                                 <div className="p-2 rounded-lg bg-red-500/10 text-red-600">
                                     <HugeiconsIcon icon={Cancel01Icon} className="h-5 w-5" />
@@ -393,7 +393,7 @@ export default function SiftPlayPageClient({ id }: SiftPlayPageClientProps) {
                             <p className="text-3xl font-bold tracking-tight">{incorrectCount}</p>
                         </div>
 
-                        <div className="hidden md:flex flex-col items-center justify-center gap-3 p-5 rounded-2xl border bg-card/50 hover:bg-card/80 transition-colors text-center">
+                        <div className="hidden md:flex flex-col gap-3 p-5 rounded-2xl border bg-card/50 hover:bg-card/80 transition-colors">
                             <div className="flex items-center gap-3 text-sm text-muted-foreground font-medium">
                                 <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600">
                                     <HugeiconsIcon icon={Target02Icon} className="h-5 w-5" />
@@ -403,7 +403,7 @@ export default function SiftPlayPageClient({ id }: SiftPlayPageClientProps) {
                             <p className="text-3xl font-bold tracking-tight">{sift.questions.length}</p>
                         </div>
 
-                        <div className="hidden md:flex flex-col items-center justify-center gap-3 p-5 rounded-2xl border bg-card/50 hover:bg-card/80 transition-colors text-center">
+                        <div className="hidden md:flex flex-col gap-3 p-5 rounded-2xl border bg-card/50 hover:bg-card/80 transition-colors">
                             <div className="flex items-center gap-3 text-sm text-muted-foreground font-medium">
                                 <div className="p-2 rounded-lg bg-orange-500/10 text-orange-600">
                                     <HugeiconsIcon icon={Time01Icon} className="h-5 w-5" />
