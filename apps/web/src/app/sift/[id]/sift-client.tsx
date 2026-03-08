@@ -263,7 +263,8 @@ export default function SiftSessionPageClient({ id }: SiftSessionPageClientProps
                 </Button>
                 
                 <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon" onClick={() => window.print()} title="Print Sift" className="text-muted-foreground hover:text-primary">
+                    <Button variant="ghost" size="lg" onClick={() => window.print()} title="Print Sift" className="text-blue-600 dark:text-blue-400 hover:dark:text-blue-500 hover:text-blue-500">
+                        Print
                          <HugeiconsIcon icon={PrinterIcon} className="size-5" />
                     </Button>
                     {sift.isOwner && (
