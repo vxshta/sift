@@ -408,7 +408,7 @@ export default function LearningPathPageClient({ id }: LearningPathPageClientPro
                     {/* Right Column: Stats & Actions */}
                     <div className="flex flex-col p-8 pt-0 md:pt-8 md:pl-3 md:pr-8 md:py-8 space-y-6 bg-card">
                         <div className="flex-1 grid grid-cols-2 gap-4 content-center">
-                            <div className="flex flex-col gap-3 p-5 rounded-2xl border bg-card/50 hover:bg-card/80 transition-colors">
+                            <div className="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl border bg-card/50 hover:bg-card/80 transition-colors text-center">
                                 <div className="flex items-center gap-3 text-sm text-muted-foreground font-medium">
                                     <div className="p-2 rounded-lg bg-green-500/10 text-green-600">
                                         <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-5 w-5" />
@@ -418,7 +418,7 @@ export default function LearningPathPageClient({ id }: LearningPathPageClientPro
                                 <p className="text-3xl font-bold tracking-tight">{correctCount}</p>
                             </div>
                             
-                            <div className="flex flex-col gap-3 p-5 rounded-2xl border bg-card/50 hover:bg-card/80 transition-colors">
+                            <div className="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl border bg-card/50 hover:bg-card/80 transition-colors text-center">
                                 <div className="flex items-center gap-3 text-sm text-muted-foreground font-medium">
                                     <div className="p-2 rounded-lg bg-red-500/10 text-red-600">
                                         <HugeiconsIcon icon={Cancel01Icon} className="h-5 w-5" />
@@ -428,7 +428,7 @@ export default function LearningPathPageClient({ id }: LearningPathPageClientPro
                                 <p className="text-3xl font-bold tracking-tight">{incorrectCount}</p>
                             </div>
 
-                            <div className="hidden md:flex flex-col gap-3 p-5 rounded-2xl border bg-card/50 hover:bg-card/80 transition-colors">
+                            <div className="hidden md:flex flex-col items-center justify-center gap-3 p-5 rounded-2xl border bg-card/50 hover:bg-card/80 transition-colors text-center">
                                 <div className="flex items-center gap-3 text-sm text-muted-foreground font-medium">
                                     <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600">
                                         <HugeiconsIcon icon={Target02Icon} className="h-5 w-5" />
@@ -438,7 +438,7 @@ export default function LearningPathPageClient({ id }: LearningPathPageClientPro
                                 <p className="text-3xl font-bold tracking-tight">{totalQuestions}</p>
                             </div>
 
-                            <div className="hidden md:flex flex-col gap-3 p-5 rounded-2xl border bg-card/50 hover:bg-card/80 transition-colors">
+                            <div className="hidden md:flex flex-col items-center justify-center gap-3 p-5 rounded-2xl border bg-card/50 hover:bg-card/80 transition-colors text-center">
                                 <div className="flex items-center gap-3 text-sm text-muted-foreground font-medium">
                                     <div className="p-2 rounded-lg bg-orange-500/10 text-orange-600">
                                         <HugeiconsIcon icon={Time01Icon} className="h-5 w-5" />
