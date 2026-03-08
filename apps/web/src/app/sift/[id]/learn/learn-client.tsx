@@ -351,7 +351,7 @@ export default function LearningPathPageClient({ id }: LearningPathPageClientPro
         const incorrectCount = totalQuestions - correctCount;
 
         return (
-            <div className="flex items-center justify-center min-h-[80vh] p-0 w-full animate-in fade-in zoom-in duration-300">
+            <div className="flex items-center justify-center min-h-[calc(100svh-4.5rem)] sm:min-h-[calc(100svh-4rem)] p-0 w-full animate-in fade-in zoom-in duration-300">
                 <Card className="w-full max-w-5xl grid md:grid-cols-2 overflow-hidden border-0 ring-1 ring-border py-0">
                     {/* Left Column: Score & Chart */}
                     <div className="flex flex-col items-center justify-center p-6 md:px-12 md:py-12 space-y-8 text-center relative overflow-hidden">
