@@ -116,14 +116,14 @@ export default function TakeawaysPageClient({ id }: TakeawaysPageClientProps) {
         const currentSiftIndex = learningPath.sifts.findIndex((s: any) => s.siftId === id);
         const nextSift = learningPath.sifts[currentSiftIndex + 1];
         if (nextSift) {
-            router.push(`/sift/${nextSift.siftId}/learn`);
+            router.push(`/sift/${nextSift.siftId}/takeaways`);
             return;
         }
         setContinuing(true);
         try {
             const { siftId } = await generateNextModuleAction(learningPath.id, learningPath.goal, id);
             toast.success("Module generated!");
-            router.push(`/sift/${siftId}/learn`);
+            router.push(`/sift/${siftId}/takeaways`);
         } catch (e) {
             toast.error("Failed to generate module");
         } finally {

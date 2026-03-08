@@ -291,7 +291,7 @@ export default function LearningPathPageClient({ id }: LearningPathPageClientPro
         const currentSiftIndex = learningPath.sifts.findIndex((s: any) => s.siftId === id);
         const nextSift = learningPath.sifts[currentSiftIndex + 1];
         if (nextSift) {
-            router.push(`/sift/${nextSift.siftId}`);
+            router.push(`/sift/${nextSift.siftId}/learn`);
             return;
         }
         setContinuing(true);
