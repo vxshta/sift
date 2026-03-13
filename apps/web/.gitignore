@@ -61,3 +61,6 @@ dev-dist
 
 # Sentry Config File
 .env.sentry-build-plugin
+
+# Playground
+/src/app/playground

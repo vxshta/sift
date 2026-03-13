@@ -25,6 +25,7 @@ export const learningPathSifts = pgTable("learning_path_sifts", {
     siftId: text("sift_id")
         .notNull()
         .references(() => sifts.id, { onDelete: "cascade" }),
+    parentSiftId: text("parent_sift_id"), // Nullable: ID of the parent module if this is a deep dive
     order: integer("order").notNull(), // 1, 2, 3...
     createdAt: timestamp("created_at").defaultNow().notNull(),
 });

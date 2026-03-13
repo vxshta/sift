@@ -60,13 +60,13 @@ export default function LearningPathDetailsClient({ path }: LearningPathDetailsC
     return (
         <div className="mx-auto px-4 space-y-8 pb-8">
              {/* Header */}
-             <div className="space-y-1">
+             <div className="space-y-2">
                 <Button variant="ghost" className="w-fit -ml-4 text-muted-foreground bg-background hover:bg-muted" onClick={() => router.push("/learn")}>
                     <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" />
                     Back to Paths
                 </Button>
 
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-background">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 dark:bg-transparent bg-background">
                     <div className="space-y-4">
                         <div className="space-y-2">
                             <h1 className="text-3xl md:text-4xl font-bold tracking-tight">{path.title}</h1>

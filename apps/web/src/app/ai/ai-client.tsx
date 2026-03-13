@@ -2,7 +2,7 @@
 
 import { useCompletion } from "@ai-sdk/react";
 import { useState } from "react";
-import { Streamdown } from "streamdown";
+import { Markdown } from "@/components/markdown";
 import { motion } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
@@ -254,9 +254,9 @@ export default function AIPageClient() {
                                         <Label>Study Plan</Label>
                                         {isPlanning ? (
                                             <div style={{ outline: 'none' }} className="py-4 px-6 rounded-lg border bg-card text-card-foreground min-h-[200px] text-sm max-h-[500px] overflow-y-auto">
-                                                <Streamdown>
+                                                <Markdown>
                                                     {planStream || "Generating plan..."}
-                                                </Streamdown>
+                                                </Markdown>
                                             </div>
                                         ) : (
                                             <Textarea 
