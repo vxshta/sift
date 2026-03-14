@@ -4,9 +4,7 @@ import { useCompletion } from "@ai-sdk/react";
 import { useState } from "react";
 import { Markdown } from "@/components/markdown";
 import { motion } from "framer-motion";
-
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";

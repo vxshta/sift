@@ -4,9 +4,9 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { getSiftAction, completeSessionAction, batchUpdateEchoesAction, createSessionAction, saveSessionAnswersAction } from "../../actions";
-import { generateNextModuleAction, getLearningPathForSiftAction } from "../../../learn/actions";
+import { generateNextModuleAction, getLearningPathForSiftAction, generateDeeperModuleAction } from "../../../learn/actions";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowRight01Icon, ArrowRightIcon, CheckmarkCircle02Icon, Cancel01Icon, HelpCircleIcon, Loading03Icon, KeyboardIcon, Target02Icon, Time01Icon, ViewIcon, ReloadIcon } from "@hugeicons/core-free-icons";
+import { ArrowRight01Icon, ArrowRightIcon, CheckmarkCircle02Icon, Cancel01Icon, HelpCircleIcon, Loading03Icon, KeyboardIcon, Target02Icon, Time01Icon, ViewIcon, ReloadIcon, Layers01Icon } from "@hugeicons/core-free-icons";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -43,6 +43,7 @@ export default function SiftPlayPageClient({ id }: SiftPlayPageClientProps) {
   const [correctCount, setCorrectCount] = useState(0);
   const [learningPath, setLearningPath] = useState<any>(null);
   const [continuing, setContinuing] = useState(false);
+  const [deepening, setDeepening] = useState(false);
 
   // Sounds
   const [playClick] = useSound('/audio/click.wav', { volume: 0.05 });
@@ -63,8 +64,11 @@ export default function SiftPlayPageClient({ id }: SiftPlayPageClientProps) {
   const { data: siftData, isLoading: isSiftLoading, refetch: refetchSift } = useQuery({
     queryKey: ["sift", id],
     queryFn: () => getSiftAction(id),
-    staleTime: Infinity,
+    staleTime: 0,
     gcTime: 1000 * 60 * 60 * 24 * 365,
+    refetchOnMount: "always",
+    refetchOnReconnect: true,
+    refetchOnWindowFocus: true,
     retry: 2,
     retryDelay: 1000,
   });
@@ -270,6 +274,34 @@ export default function SiftPlayPageClient({ id }: SiftPlayPageClientProps) {
     }
   }, [learningPath, id, router]);
 
+  const handleDeepDive = useCallback(async () => {
+    if (!learningPath) return;
+
+    // 1. Check if there's already a next deep dive module available
+    const currentSiftIndex = learningPath.sifts.findIndex((s: any) => String(s.siftId) === String(id));
+    
+    if (currentSiftIndex !== -1) {
+            const nextSift = learningPath.sifts[currentSiftIndex + 1];
+            // If the next module is a deep dive of the current one, just go there
+            if (nextSift && String(nextSift.parentSiftId) === String(id)) {
+                router.push(`/sift/${nextSift.siftId}/learn`);
+                return;
+            }
+    }
+
+    setDeepening(true);
+    try {
+        const { siftId } = await generateDeeperModuleAction(learningPath.id, id);
+        toast.success("Deep dive module generated!");
+        router.push(`/sift/${siftId}/learn`);
+    } catch (e) {
+        console.error("Deep dive error:", e);
+        toast.error("Failed to generate deep dive");
+    } finally {
+        setDeepening(false);
+    }
+  }, [learningPath, id, router]);
+
   // Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -420,10 +452,30 @@ export default function SiftPlayPageClient({ id }: SiftPlayPageClientProps) {
                             <HugeiconsIcon icon={ArrowRight01Icon} className="h-5 w-5 rotate-180" />
                             Return
                         </Button>
-                        <Button size="lg" onClick={() => router.push(`/sift/${id}?review=${sessionId}`)} variant="outline" className="h-12 text-base rounded-xl col-span-2">
+                        <Button size="lg" onClick={() => router.push(`/sift/${id}?review=${sessionId}`)} variant="outline" className="h-12 text-base rounded-xl">
                             Review
                         </Button>
-                        <Button size="lg" onClick={handleContinueLearning} className="h-12 text-base rounded-xl col-span-2" disabled={continuing}>
+                        <Button size="lg" onClick={handleDeepDive} variant="outline" className="h-12 text-base rounded-xl" disabled={deepening || continuing}>
+                            {deepening ? (
+                                <>
+                                    <HugeiconsIcon icon={Loading03Icon} className="h-4 w-4 animate-spin" />
+                                    Generating...
+                                </>
+                            ) : (
+                                <>
+                                    <HugeiconsIcon icon={Layers01Icon} className="h-4 w-4" />
+                                    {(() => {
+                                        // Check if next module is already a deep dive
+                                        const currentSiftIndex = learningPath?.sifts?.findIndex((s: any) => s.siftId === id);
+                                        if (currentSiftIndex !== -1 && learningPath?.sifts?.[currentSiftIndex + 1]?.parentSiftId === id) {
+                                            return "Next Deep Dive";
+                                        }
+                                        return "Go Deeper";
+                                    })()}
+                                </>
+                            )}
+                        </Button>
+                        <Button size="lg" onClick={handleContinueLearning} className="h-12 text-base rounded-xl" disabled={continuing || deepening}>
                             {continuing ? (
                                 <>
                                     <HugeiconsIcon icon={Loading03Icon} className="h-4 w-4 animate-spin" />

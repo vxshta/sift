@@ -5,8 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getSiftAction, getSiftSessionsAction, deleteSessionAction, updateSiftAction, deleteSiftAction, getFlashcardsAction } from "../actions";
-import { getLearningPathForSiftAction, generateNextModuleAction } from "../../learn/actions";
-import { Streamdown } from "streamdown";
+import { getLearningPathForSiftAction, generateNextModuleAction, generateDeeperModuleAction } from "../../learn/actions";
+import { Markdown } from "@/components/markdown";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowRight01Icon, CheckmarkCircle02Icon, Cancel01Icon, HelpCircleIcon, Loading03Icon, PlayIcon, Time01Icon, ChartHistogramIcon, Delete01Icon, Target02Icon, StarIcon, TrendingUp, MoreVerticalIcon, Globe02Icon, SquareLock02Icon, Archive02Icon, Idea01Icon, Book01Icon, ArrowRightIcon, Layers01Icon, PrinterIcon } from "@hugeicons/core-free-icons";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +42,7 @@ export default function SiftSessionPageClient({ id }: SiftSessionPageClientProps
   const [isDeletingSift, setIsDeletingSift] = useState(false);
   const [learningPath, setLearningPath] = useState<any>(null);
   const [generatingNext, setGeneratingNext] = useState(false);
+  const [deepening, setDeepening] = useState(false);
 
   const barChartConfig = {
     score: {
@@ -80,8 +81,11 @@ export default function SiftSessionPageClient({ id }: SiftSessionPageClientProps
   const { data: siftData, isLoading: isSiftLoading } = useQuery({
     queryKey: ["sift", id],
     queryFn: () => getSiftAction(id),
-    staleTime: Infinity,
+    staleTime: 0,
     gcTime: 1000 * 60 * 60 * 24 * 365,
+    refetchOnMount: "always",
+    refetchOnReconnect: true,
+    refetchOnWindowFocus: true,
     retry: 2,
     retryDelay: 1000,
   });
@@ -89,7 +93,10 @@ export default function SiftSessionPageClient({ id }: SiftSessionPageClientProps
   const { data: flashcards } = useQuery({
     queryKey: ["flashcards", id],
     queryFn: () => getFlashcardsAction(id),
-    staleTime: Infinity,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnReconnect: true,
+    refetchOnWindowFocus: true,
     enabled: !!id,
   });
 
@@ -202,6 +209,38 @@ export default function SiftSessionPageClient({ id }: SiftSessionPageClientProps
         toast.error("Failed to generate module");
     } finally {
         setGeneratingNext(false);
+    }
+  };
+
+  const handleDeepDive = async () => {
+    if (!learningPath) return;
+
+    // 1. Check if there's already a next deep dive module available
+    // Ensure we are comparing strings, just in case
+    const currentSiftIndex = learningPath.sifts.findIndex((s: any) => String(s.siftId) === String(id));
+    
+    if (currentSiftIndex !== -1) {
+            const nextSift = learningPath.sifts[currentSiftIndex + 1];
+            // If the next module is a deep dive of the current one, just go there
+            // Ensure ID comparison is safe
+            if (nextSift && String(nextSift.parentSiftId) === String(id)) {
+                router.push(`/sift/${nextSift.siftId}`);
+                return;
+            }
+    }
+
+    // 2. Otherwise generate a new one
+    setDeepening(true);
+    try {
+        // Explicitly pass the current sift ID (id prop) to the action
+        const { siftId } = await generateDeeperModuleAction(learningPath.id, id);
+        toast.success("Deep dive module generated!");
+        router.push(`/sift/${siftId}`);
+    } catch (e) {
+        console.error("Deep dive error:", e);
+        toast.error("Failed to generate deep dive");
+    } finally {
+        setDeepening(false);
     }
   };
 
@@ -368,6 +407,31 @@ export default function SiftSessionPageClient({ id }: SiftSessionPageClientProps
                             </div>
                             
                             <div className="flex items-center gap-2 w-full md:w-auto">
+                                <Button
+                                    variant="outline"
+                                    className="font-jakarta w-full rounded-xl shadow-none sm:w-auto text-base px-4 h-12 gap-2 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,#00000008_10px,#00000008_11px)] dark:bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,#ffffff08_10px,#ffffff08_11px)] duration-300 transition-all"
+                                    onClick={handleDeepDive}
+                                    disabled={deepening || generatingNext}
+                                >
+                                    {deepening ? (
+                                        <>
+                                            <HugeiconsIcon icon={Loading03Icon} className="h-4 w-4 animate-spin" />
+                                            Generating...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <HugeiconsIcon icon={Layers01Icon} className="h-4 w-4" />
+                                            {(() => {
+                                                // Check if next module is already a deep dive
+                                                const currentSiftIndex = learningPath?.sifts?.findIndex((s: any) => s.siftId === id);
+                                                if (currentSiftIndex !== -1 && learningPath?.sifts?.[currentSiftIndex + 1]?.parentSiftId === id) {
+                                                    return "Next Deep Dive";
+                                                }
+                                                return "Go Deeper";
+                                            })()}
+                                        </>
+                                    )}
+                                </Button>
                                 {(() => {
                                     const currentSiftIndex = learningPath.sifts.findIndex((s: any) => s.siftId === id);
                                     const nextSift = learningPath.sifts[currentSiftIndex + 1];
@@ -474,9 +538,9 @@ export default function SiftSessionPageClient({ id }: SiftSessionPageClientProps
                                         </div>
                                     </div>
                                     <div className="prose dark:prose-invert max-w-none text-lg">
-                                        <Streamdown mode="static">
+                                        <Markdown mode="static">
                                             {section.content}
-                                        </Streamdown>
+                                        </Markdown>
                                     </div>
                                 </Card>
                             ))}
@@ -988,7 +1052,7 @@ export default function SiftSessionPageClient({ id }: SiftSessionPageClientProps
                                     {section.title}
                                 </h3>
                                 <div className="prose max-w-none text-justify text-gray-800">
-                                    <Streamdown mode="static">{section.content}</Streamdown>
+                                    <Markdown mode="static">{section.content}</Markdown>
                                 </div>
                             </div>
                         ))}

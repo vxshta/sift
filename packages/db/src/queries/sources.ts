@@ -29,7 +29,11 @@ export async function getSources(userId: string): Promise<SourceWithSifts[]> {
     where: eq(sources.userId, userId),
     orderBy: desc(sources.createdAt),
     with: {
-        sifts: true
+        sifts: {
+          with: {
+            learningPathSifts: true
+          }
+        }
     }
   });
   return result as SourceWithSifts[];

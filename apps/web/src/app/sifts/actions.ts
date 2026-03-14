@@ -1,7 +1,7 @@
 "use server";
 
 import { getSifts, getPublicSifts, getArchivedSifts } from "@sift/auth/actions/sifts";
-import { unstable_cache } from "next/cache";
+import { unstable_noStore, unstable_cache } from "next/cache";
 import { getRequestContext } from "@/lib/cache";
 
 export async function getSiftsAction() {
@@ -9,12 +9,14 @@ export async function getSiftsAction() {
   if (!userId || userId === "anonymous") {
     throw new Error("Unauthorized");
   }
-  const cached = unstable_cache(
-    () => getSifts(headerStore),
-    ["sifts-active", userId],
-    { tags: [`sifts-active:${userId}`] }
-  );
-  return cached();
+  // const cached = unstable_cache(
+  //   () => getSifts(headerStore),
+  //   ["sifts-active", userId],
+  //   { tags: [`sifts-active:${userId}`] }
+  // );
+  // return cached();
+  unstable_noStore();
+  return getSifts(headerStore);
 }
 
 export async function getArchivedSiftsAction() {
@@ -28,6 +30,8 @@ export async function getArchivedSiftsAction() {
     { tags: [`sifts-archived:${userId}`] }
   );
   return cached();
+  // unstable_noStore();
+  // return getArchivedSifts(headerStore);
 }
 
 export async function getPublicSiftsAction() {
@@ -41,4 +45,6 @@ export async function getPublicSiftsAction() {
     { tags: ["sifts-public:global"] }
   );
   return cached();
+  // unstable_noStore();
+  // return getPublicSifts(headerStore);
 }

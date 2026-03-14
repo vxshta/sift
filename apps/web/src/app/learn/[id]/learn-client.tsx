@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { generateNextModuleAction, getLearningPathAction } from "../actions";
+import { deleteLearningPathAction, generateNextModuleAction, getLearningPathAction } from "../actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { 
     Mortarboard02Icon, 
@@ -14,7 +15,8 @@ import {
     CircleIcon,
     Clock01Icon,
     ArrowLeft01Icon,
-    Loading03Icon
+    Loading03Icon,
+    Delete01Icon
 } from "@hugeicons/core-free-icons";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -29,6 +31,7 @@ interface LearningPathDetailsClientProps {
 
 export default function LearningPathDetailsClient({ path }: LearningPathDetailsClientProps) {
     const [generating, setGenerating] = useState(false);
+    const [deleting, setDeleting] = useState(false);
     const router = useRouter();
 
     const handleContinue = () => {
@@ -54,6 +57,19 @@ export default function LearningPathDetailsClient({ path }: LearningPathDetailsC
             console.error(e);
             toast.error("Failed to generate module");
             setGenerating(false);
+        }
+    };
+
+    const handleDelete = async () => {
+        setDeleting(true);
+        try {
+            await deleteLearningPathAction(path.id);
+            toast.success("Learning path deleted");
+            router.push("/learn");
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to delete learning path");
+            setDeleting(false);
         }
     };
 
@@ -101,6 +117,34 @@ export default function LearningPathDetailsClient({ path }: LearningPathDetailsC
                                 </>
                             )}
                         </Button>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button size="lg" variant="outline" className="w-full sm:w-auto px-6 text-base h-11 rounded-xl text-destructive border-destructive/30 hover:text-destructive hover:border-destructive/60">
+                                    <HugeiconsIcon icon={Delete01Icon} className="mr-2 h-4 w-4" />
+                                    Delete Path
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <div className="w-full flex flex-col justify-center items-center gap-2">
+                                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
+                                            <HugeiconsIcon icon={Delete01Icon} className="h-6 w-6 text-red-600 dark:text-red-400" />
+                                        </div>
+                                        <AlertDialogTitle className="text-lg font-semibold">Delete learning path?</AlertDialogTitle>
+                                    </div>
+                                    <AlertDialogDescription className="text-center text-balance flex flex-col items-center justify-center w-full">
+                                        This deletes the learning path and its modules.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={deleting}>
+                                        {deleting && <HugeiconsIcon icon={Loading03Icon} className="mr-2 h-4 w-4 animate-spin" />}
+                                        Delete
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                     </div>
                 </div>
              </div>

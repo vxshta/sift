@@ -46,8 +46,11 @@ export default function FlashcardsPageClient({ id }: FlashcardsPageClientProps) 
     const { data: siftData, isLoading: isSiftLoading } = useQuery({
         queryKey: ["sift", id],
         queryFn: () => getSiftAction(id),
-        staleTime: Infinity,
+        staleTime: 0,
         gcTime: 1000 * 60 * 60 * 24 * 365,
+        refetchOnMount: "always",
+        refetchOnReconnect: true,
+        refetchOnWindowFocus: true,
         retry: 2,
         retryDelay: 1000,
     });
@@ -55,8 +58,11 @@ export default function FlashcardsPageClient({ id }: FlashcardsPageClientProps) 
     const { data: flashcardsData, isLoading: isFlashcardsLoading } = useQuery({
         queryKey: ["flashcards", id],
         queryFn: () => getFlashcardsAction(id),
-        staleTime: Infinity,
+        staleTime: 0,
         gcTime: 1000 * 60 * 60 * 24 * 365,
+        refetchOnMount: "always",
+        refetchOnReconnect: true,
+        refetchOnWindowFocus: true,
         retry: 2,
         retryDelay: 1000,
     });

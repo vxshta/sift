@@ -15,13 +15,17 @@ const PERSISTED_QUERY_KEYS = [
   "learning-path-for-sift",
 ] as const;
 
-const CACHE_MAX_AGE = 1000 * 60 * 60 * 24 * 365; // 1 year
+// const CACHE_MAX_AGE = 1000 * 60 * 60 * 24 * 365; // 1 year
+const CACHE_MAX_AGE = 1000 * 60 * 15;
 
 const createQueryClient = () =>
   new QueryClient({
     defaultOptions: {
       queries: {
-        refetchOnWindowFocus: false,
+        refetchOnWindowFocus: true,
+        refetchOnReconnect: true,
+        refetchOnMount: "always",
+        staleTime: 0,
         retry: 2,
       },
     },

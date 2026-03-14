@@ -3,7 +3,8 @@
 import { createSiftSession, updateSiftSession, addSessionAnswers, getSiftSessions, getSiftSessionDetails, deleteSiftSession, updateSift, deleteSift, getSift } from "@sift/auth/actions/sifts";
 import { updateEchoMastery, batchUpdateEchoesAction as batchUpdateEchoes } from "@sift/auth/actions/echoes";
 import { addFlashcards, getFlashcards } from "@sift/auth/actions/flashcards";
-import { revalidateTag, unstable_cache } from "next/cache";
+import { getLearningPathForSift } from "@sift/auth/actions/learning-paths";
+import { revalidateTag, unstable_noStore, unstable_cache } from "next/cache";
 import type { NewSift } from "@sift/auth/types";
 import { getRequestContext } from "@/lib/cache";
 import { PostHog } from 'posthog-node'
@@ -21,12 +22,14 @@ export async function getSiftAction(id: string) {
     if (!userId || userId === "anonymous") {
         throw new Error("Unauthorized");
     }
-    const cached = unstable_cache(
-        () => getSift(id, headerStore),
-        ["sift-detail", id, userId],
-        { tags: [`sift-detail:${id}`] }
-    );
-    const sift = await cached();
+    // const cached = unstable_cache(
+    //     () => getSift(id, headerStore),
+    //     ["sift-detail", id, userId],
+    //     { tags: [`sift-detail:${id}`] }
+    // );
+    // const sift = await cached();
+    unstable_noStore();
+    const sift = await getSift(id, headerStore);
     if (!sift) return null;
     return {
         ...sift,
@@ -51,11 +54,17 @@ export async function deleteSiftAction(id: string) {
     if (!userId || userId === "anonymous") {
         throw new Error("Unauthorized");
     }
+    const learningPath = await getLearningPathForSift(id, headerStore);
     await deleteSift(id, headerStore);
     revalidateTag(`sift-detail:${id}`, "default");
     revalidateTag(`sifts-active:${userId}`, "default");
     revalidateTag(`sifts-archived:${userId}`, "default");
     revalidateTag(`sifts-public:global`, "default");
+    if (learningPath?.id) {
+        revalidateTag(`learning-paths-all:${userId}`, "default");
+        revalidateTag(`learning-path-detail:${userId}:${learningPath.id}`, "default");
+        revalidateTag(`learning-path-by-sift:${userId}:${id}`, "default");
+    }
 }
 
 export async function getSiftSessionsAction(siftId: string) {
@@ -178,4 +187,6 @@ export async function getFlashcardsAction(siftId: string) {
         { tags: [`flashcards-detail:${siftId}`] }
     );
     return cached();
+    // unstable_noStore();
+    // return getFlashcards(siftId, headerStore);
 }

@@ -2,17 +2,21 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { getLearningPathsAction } from "./actions";
+import { deleteLearningPathAction, getLearningPathsAction } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { 
     Mortarboard02Icon, 
     ArrowRight01Icon, 
     PlusSignIcon,
+    Delete01Icon,
+    Loading03Icon
 } from "@hugeicons/core-free-icons";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 // Define type based on action return
 type LearningPath = Awaited<ReturnType<typeof getLearningPathsAction>>[number];
@@ -22,7 +26,8 @@ interface LearningPathsPageClientProps {
 }
 
 export default function LearningPathsPageClient({ initialPaths }: LearningPathsPageClientProps) {
-    const [paths] = useState<LearningPath[]>(initialPaths);
+    const [paths, setPaths] = useState<LearningPath[]>(initialPaths);
+    const [deletingPathId, setDeletingPathId] = useState<string | null>(null);
     const router = useRouter();
 
     const handleResume = (path: LearningPath) => {
@@ -40,6 +45,20 @@ export default function LearningPathsPageClient({ initialPaths }: LearningPathsP
         // router.push(`/sift/${lastSiftRef.siftId}`);
 
         router.push(`/learn/${path.id}`);
+    };
+
+    const handleDelete = async (pathId: string) => {
+        setDeletingPathId(pathId);
+        try {
+            await deleteLearningPathAction(pathId);
+            setPaths((current) => current.filter((path) => path.id !== pathId));
+            toast.success("Learning path deleted");
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to delete learning path");
+        } finally {
+            setDeletingPathId(null);
+        }
     };
 
     const container = {
@@ -104,10 +123,37 @@ export default function LearningPathsPageClient({ initialPaths }: LearningPathsP
                             transition={{ type: "spring", stiffness: 260, damping: 20, delay: (index % 3) * 0.05 }}
                         >
                             <Card className="group h-full flex flex-col overflow-hidden border-border/30 bg-card hover:bg-card hover:border-primary/20 transition-all duration-300 hover:shadow-none hover:shadow-primary/5 gap-3">
-                                <CardHeader className="flex justify-between items-center pt-0 pb-2">
+                                <CardHeader className="flex justify-between items-start pt-0 pb-2">
                                     <CardTitle className="flex flex-row justify-between items-center text-xl font-semibold line-clamp-2 leading-tight group-hover:text-primary transition-colors">
                                         {path.title}
                                     </CardTitle>
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                                                <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <div className="w-full flex flex-col justify-center items-center gap-2">
+                                                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
+                                                        <HugeiconsIcon icon={Delete01Icon} className="h-6 w-6 text-red-600 dark:text-red-400" />
+                                                    </div>
+                                                    <AlertDialogTitle className="text-lg font-semibold">Delete learning path?</AlertDialogTitle>
+                                                </div>
+                                                <AlertDialogDescription className="text-center text-balance flex flex-col items-center justify-center w-full">
+                                                    This deletes the learning path and its modules.
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                <AlertDialogAction onClick={() => handleDelete(path.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                                    {deletingPathId === path.id && <HugeiconsIcon icon={Loading03Icon} className="mr-2 h-4 w-4 animate-spin" />}
+                                                    Delete
+                                                </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
 
                                     {/* <div className="px-2.5 py-1 rounded-full bg-secondary/50 text-xs font-medium text-secondary-foreground flex items-center gap-1.5">
                                             <HugeiconsIcon icon={Clock01Icon} className="h-3 w-3" />

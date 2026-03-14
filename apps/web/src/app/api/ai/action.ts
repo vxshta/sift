@@ -3,17 +3,17 @@
 import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
 import { addQuestions, addSections, updateSiftSummary, updateSiftTakeaways } from "@sift/auth/actions/sifts";
-import { getLearningPath, updatePathSummary } from "@sift/auth/actions/learning-paths";
+import { getLearningPath, updatePathSummary, refreshPathSummary } from "@sift/auth/actions/learning-paths";
 import { addFlashcards } from "@sift/auth/actions/flashcards";
 import { revalidateTag } from "next/cache";
 import { eventBus } from "@/lib/events";
-import { SYSTEM_PROMPT, LEARNING_PATH_SYSTEM_PROMPT } from "@/lib/ai-prompts";
+import { SYSTEM_PROMPT, LEARNING_PATH_SYSTEM_PROMPT, DEEP_DIVE_SYSTEM_PROMPT } from "@/lib/ai-prompts";
 import { getRequestContext } from "@/lib/cache";
 
 // Helper function to pause execution
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export async function generateQuestionsAction(siftId: string, content: string, mode: 'questions' | 'learn' = 'questions', pathId?: string) {
+export async function generateQuestionsAction(siftId: string, content: string, mode: 'questions' | 'learn' | 'deep-dive' = 'questions', pathId?: string) {
     const MAX_ATTEMPTS = 3;
     const { headerStore, userId } = await getRequestContext();
     if (!userId || userId === "anonymous") {
@@ -22,31 +22,64 @@ export async function generateQuestionsAction(siftId: string, content: string, m
     
     let systemPrompt = SYSTEM_PROMPT;
     if (mode === 'learn') systemPrompt = LEARNING_PATH_SYSTEM_PROMPT;
+    if (mode === 'deep-dive') systemPrompt = DEEP_DIVE_SYSTEM_PROMPT;
     
-    let userPrompt = `Here is the content to generate questions from:\n\n${content}`;
-    // if (mode === 'learn') userPrompt = `Create a learning path for: ${content}`;
+    let userPrompt = "";
+
+    // Inject Context for Learning Paths
+    let contextPrompt = "";
+    if ((mode === 'learn' || mode === 'deep-dive') && pathId) {
+        const path = await getLearningPath(pathId, headerStore);
+        if (path && path.summary) {
+            let summary = path.summary;
+            if (mode === 'deep-dive') {
+                const orderMatch = content.match(/CURRENT MODULE ORDER:\s*(\d+)/);
+                if (orderMatch) {
+                    const orderIndex = Number(orderMatch[1]);
+                    if (Number.isFinite(orderIndex) && orderIndex > 0) {
+                        const lines = path.summary
+                            .split("\n")
+                            .map((line) => line.trim())
+                            .filter((line) => line.length > 0);
+                        summary = lines.slice(0, orderIndex).join("\n");
+                    }
+                }
+                contextPrompt = `PREVIOUSLY COVERED TOPICS (UP TO CURRENT MODULE):\n${summary}\n\n`;
+            } else {
+                contextPrompt = `PREVIOUSLY COVERED TOPICS:\n${summary}\n\n`;
+            }
+        }
+    }
+    
     if (mode === 'learn') {
-        userPrompt = `GOAL: ${content}
+        userPrompt = `${contextPrompt}GOAL: ${content}
 OUTPUT: Create a structured learning path JSON that follows the system rules.
+INSTRUCTION: Create the next logical module in this curriculum based on the PREVIOUSLY COVERED TOPICS (if any) and the GOAL. Do not repeat concepts.
 REQUIREMENTS:
 - At least 5 sections.
 - Each section covers a distinct topic with no repetition.
 - Progress from fundamentals to advanced concepts.
 - Only include brief recap if absolutely necessary.`;
-    }
-
-    // Inject Context for Learning Paths
-    if (mode === 'learn' && pathId) {
-        const path = await getLearningPath(pathId, headerStore);
-        if (path && path.summary) {
-            // userPrompt = `CONTEXT: The user has already learned the following concepts:\n${path.summary}\n\nGOAL: ${content}\n\nINSTRUCTION: Create the NEXT logical module in this curriculum. Do not repeat the concepts already learned unless for brief review. Introduce new concepts that build upon the previous ones.\n\n${userPrompt}`;
-            userPrompt = `PREVIOUSLY COVERED TOPICS:\n${path.summary}\n\nGOAL: ${content}\n\nINSTRUCTION: Create the next logical module. Do not repeat any topics from the list, except for a brief recap when absolutely necessary. Introduce new concepts that build on prior knowledge. Ensure at least 5 sections and keep each section unique.\n\n${userPrompt}`;
-        }
+    } else if (mode === 'deep-dive') {
+        const deepDiveContent = content.replace(/CURRENT MODULE ORDER:\s*\d+\s*/g, "").trim();
+        userPrompt = `${contextPrompt}CONTEXT:\n${deepDiveContent}
+OUTPUT: Create a deep dive module JSON that follows the system rules.
+INSTRUCTION: Use the PREVIOUSLY COVERED TOPICS context to avoid repetition and to keep continuity. If the summary contains entries tagged as Deep Dive, treat those as the immediate previous module and continue deeper on that thread.
+REQUIREMENTS:
+- 3-5 sections exploring advanced nuances.
+- Focus on "why" and "how" over "what".
+- Include complex scenarios or edge cases.`;
+// INSTRUCTION: Create a deep dive module based on the CURRENT MODULE CONTENT provided above. This module should fit into the learning path described in PREVIOUSLY COVERED TOPICS, but strictly focus on deepening the understanding of the CURRENT MODULE
+    } else {
+        // Default questions mode
+        userPrompt = `Here is the content to generate questions from:\n\n${content}`;
     }
 
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
         try {
             console.log(`Generating ${mode} for Sift: ${siftId} (Attempt ${attempt}/${MAX_ATTEMPTS})`);
+            console.log("AI system prompt:", systemPrompt);
+            console.log("AI user prompt:", userPrompt);
             
             const { text } = await generateText({
                 model: google("gemini-3-flash-preview"),
@@ -55,8 +88,8 @@ REQUIREMENTS:
             });
 
             // 1. Locate JSON
-            const jsonStartIndex = text.indexOf(mode === 'learn' ? '{' : '{'); // Changed '[' to '{' for questions mode
-            const jsonEndIndex = text.lastIndexOf(mode === 'learn' ? '}' : '}') + 1; // Changed ']' to '}' for questions mode
+            const jsonStartIndex = text.indexOf((mode === 'learn' || mode === 'deep-dive') ? '{' : '{'); // Changed '[' to '{' for questions mode
+            const jsonEndIndex = text.lastIndexOf((mode === 'learn' || mode === 'deep-dive') ? '}' : '}') + 1; // Changed ']' to '}' for questions mode
 
             if (jsonStartIndex === -1 || jsonEndIndex === -1) {
                  throw new Error("AI did not return a valid JSON");
@@ -68,7 +101,7 @@ REQUIREMENTS:
 
             let questionsCount = 0;
 
-            if (mode === 'learn') {
+            if (mode === 'learn' || mode === 'deep-dive') {
                 // Handle Learning Path (Object with sections and summary)
                 if (!parsedData.sections || !Array.isArray(parsedData.sections)) {
                      // Fallback for array output if AI ignores object instruction (backwards compatibility)
@@ -128,14 +161,15 @@ REQUIREMENTS:
                      await updateSiftTakeaways(siftId, parsedData.takeaways, headerStore);
                 }
 
-                // Update Path Summary
-                if (pathId && parsedData.summary) {
-                    await updatePathSummary(pathId, parsedData.summary, headerStore);
-                }
-
                 // Save summary to sift
                 if (parsedData.summary) {
                     await updateSiftSummary(siftId, parsedData.summary, headerStore);
+                }
+
+                // Update Path Summary
+                if (pathId) {
+                    // Refresh the summary from all modules to ensure correct order
+                    await refreshPathSummary(pathId, headerStore);
                 }
 
             } else {

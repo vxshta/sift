@@ -1,7 +1,7 @@
 "use server";
 
 import { createSource, deleteSource, getSources } from "@sift/auth/actions/sources";
-import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
+import { revalidatePath, revalidateTag, unstable_noStore } from "next/cache";
 import { createSift, addQuestions, addSections, updateSiftTakeaways } from "@sift/auth/actions/sifts";
 import { addFlashcards } from "@sift/auth/actions/flashcards";
 import { createLearningPath, addSiftToPath, updatePathSummary } from "@sift/auth/actions/learning-paths";
@@ -232,7 +232,7 @@ export async function createImportedLearningPathAction(title: string, data: any)
     // 3. Create Sift for the first module
     const siftId = await createSift({
         sourceId,
-        summary: summary, // Save summary to sift if available
+        summary: summary,
         config: {
             method: "import",
             isLearningPath: true
@@ -308,12 +308,14 @@ export async function getSourcesAction() {
     if (!userId || userId === "anonymous") {
         throw new Error("Unauthorized");
     }
-    const cached = unstable_cache(
-        () => getSources(headerStore),
-        ["sources-all", userId],
-        { tags: [`sources-all:${userId}`] }
-    );
-    return cached();
+    // const cached = unstable_cache(
+    //     () => getSources(headerStore),
+    //     ["sources-all", userId],
+    //     { tags: [`sources-all:${userId}`] }
+    // );
+    // return cached();
+    unstable_noStore();
+    return getSources(headerStore);
 }
 
 export async function deleteSourceAction(id: string) {
@@ -326,5 +328,6 @@ export async function deleteSourceAction(id: string) {
     revalidateTag(`sources-all:${userId}`, "default");
     revalidateTag(`sifts-active:${userId}`, "default");
     revalidateTag(`sifts-archived:${userId}`, "default");
+    revalidateTag("sifts-public:global", "default");
     return { success: true };
 }

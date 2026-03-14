@@ -44,6 +44,5 @@ export type SiftWithQuestions = Sift & {
     sections?: SectionWithQuestions[]; 
     source: Source | null 
 };
-export type SourceWithSifts = Source & { sifts: Sift[] };
-
+export type SourceWithSifts = Source & { sifts: (Sift & { learningPathSifts?: LearningPathSift[] })[] };
 

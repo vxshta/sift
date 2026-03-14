@@ -169,7 +169,16 @@ export default function Dashboard({ session, initialSources }: DashboardProps) {
                             </Button>
                         </div>
                         <div className="min-w-0">
-                            <h3 className="font-semibold truncate pr-2" title={source.title}>{source.title}</h3>
+                            {(() => {
+                                const moduleOrder = source.sifts?.[0]?.learningPathSifts?.[0]?.order;
+                                const moduleLabel = typeof moduleOrder === "number" ? `Module ${moduleOrder + 1}: ` : "";
+                                const displayTitle = `${moduleLabel}${source.title}`;
+                                return (
+                                    <h3 className="font-semibold truncate pr-2" title={displayTitle}>
+                                        {displayTitle}
+                                    </h3>
+                                );
+                            })()}
                             <p className="text-xs text-muted-foreground mt-1 truncate">
                                 Added {formatDistanceToNow(new Date(source.createdAt), { addSuffix: true })}
                             </p>

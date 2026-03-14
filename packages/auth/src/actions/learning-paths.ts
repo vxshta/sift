@@ -3,8 +3,12 @@ import {
     getLearningPaths as dbGetLearningPaths, 
     getLearningPath as dbGetLearningPath, 
     addSiftToPath as dbAddSiftToPath, 
+    insertSiftInPath as dbInsertSiftInPath,
     updatePathSummary as dbUpdatePathSummary,
-    getLearningPathForSift as dbGetLearningPathForSift
+    refreshPathSummary as dbRefreshPathSummary,
+    getLearningPathForSift as dbGetLearningPathForSift,
+    getDeepDivesForParent as dbGetDeepDivesForParent,
+    deleteLearningPath as dbDeleteLearningPath
 } from "@sift/db/queries/learning-paths";
 import { auth } from "../index";
 
@@ -92,6 +96,42 @@ export async function addSiftToPath(pathId: string, siftId: string, headers: Hea
     await dbAddSiftToPath(pathId, siftId);
 }
 
+export async function insertSiftInPath(pathId: string, siftId: string, order: number, headers: Headers, parentSiftId?: string) {
+    const session = await auth.api.getSession({
+        headers,
+    });
+
+    if (!session) {
+        throw new Error("Unauthorized");
+    }
+
+    // Check ownership
+    const path = await dbGetLearningPath(pathId);
+    if (!path || path.userId !== session.user.id) {
+        throw new Error("Unauthorized");
+    }
+
+    await dbInsertSiftInPath(pathId, siftId, order, parentSiftId);
+}
+
+export async function getDeepDivesForParent(pathId: string, parentSiftId: string, headers: Headers) {
+    const session = await auth.api.getSession({
+        headers,
+    });
+
+    if (!session) {
+        throw new Error("Unauthorized");
+    }
+
+    // Check ownership
+    const path = await dbGetLearningPath(pathId);
+    if (!path || path.userId !== session.user.id) {
+        throw new Error("Unauthorized");
+    }
+
+    return await dbGetDeepDivesForParent(pathId, parentSiftId);
+}
+
 export async function updatePathSummary(pathId: string, newSummary: string, headers: Headers) {
     const session = await auth.api.getSession({
         headers,
@@ -108,4 +148,40 @@ export async function updatePathSummary(pathId: string, newSummary: string, head
     }
 
     await dbUpdatePathSummary(pathId, newSummary);
+    await dbRefreshPathSummary(pathId);
+}
+
+export async function refreshPathSummary(pathId: string, headers: Headers) {
+    const session = await auth.api.getSession({
+        headers,
+    });
+
+    if (!session) {
+        throw new Error("Unauthorized");
+    }
+
+    // Check ownership
+    const path = await dbGetLearningPath(pathId);
+    if (!path || path.userId !== session.user.id) {
+        throw new Error("Unauthorized");
+    }
+
+    await dbRefreshPathSummary(pathId);
+}
+
+export async function deleteLearningPath(pathId: string, headers: Headers) {
+    const session = await auth.api.getSession({
+        headers,
+    });
+
+    if (!session) {
+        throw new Error("Unauthorized");
+    }
+
+    const path = await dbGetLearningPath(pathId);
+    if (!path || path.userId !== session.user.id) {
+        throw new Error("Unauthorized");
+    }
+
+    return await dbDeleteLearningPath(pathId);
 }

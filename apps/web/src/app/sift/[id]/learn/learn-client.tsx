@@ -10,7 +10,7 @@ import {
     completeSessionAction, 
     batchUpdateEchoesAction 
 } from "../../actions";
-import { getLearningPathForSiftAction, generateNextModuleAction } from "../../../learn/actions";
+import { getLearningPathForSiftAction, generateNextModuleAction, generateDeeperModuleAction } from "../../../learn/actions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -25,14 +25,15 @@ import {
     KeyboardIcon,
     Target02Icon,
     Time01Icon,
-    ReloadIcon
+    ReloadIcon,
+    Layers01Icon
 } from "@hugeicons/core-free-icons";
 import { toast } from "sonner";
 import { motion, AnimatePresence, easeIn, easeOut, easeInOut } from "framer-motion";
 import type { SiftWithQuestions } from "@sift/auth/types";
 import { cn } from "@/lib/utils";
 import useSound from "use-sound";
-import { Streamdown } from "streamdown";
+import { Markdown } from "@/components/markdown";
 import { Pie, PieChart } from "recharts";
 import { type ChartConfig, ChartContainer } from "@/components/ui/chart";
 
@@ -70,6 +71,7 @@ export default function LearningPathPageClient({ id }: LearningPathPageClientPro
     const [performanceData, setPerformanceData] = useState<{ topic: string, level: number }[]>([]);
     const [learningPath, setLearningPath] = useState<any>(null);
     const [continuing, setContinuing] = useState(false);
+    const [deepening, setDeepening] = useState(false);
 
     // Sounds
     const [playClick] = useSound('/audio/click.wav', { volume: 0.05 });
@@ -90,8 +92,11 @@ export default function LearningPathPageClient({ id }: LearningPathPageClientPro
     const { data: siftData, isLoading: isSiftLoading } = useQuery({
         queryKey: ["sift", id],
         queryFn: () => getSiftAction(id),
-        staleTime: Infinity,
+        staleTime: 0,
         gcTime: 1000 * 60 * 60 * 24 * 365,
+        refetchOnMount: "always",
+        refetchOnReconnect: true,
+        refetchOnWindowFocus: true,
         retry: 2,
         retryDelay: 1000,
     });
@@ -306,6 +311,36 @@ export default function LearningPathPageClient({ id }: LearningPathPageClientPro
         }
     }, [learningPath, id, router]);
 
+    const handleDeepDive = async () => {
+        if (!learningPath) return;
+        
+        // 1. Check if there's already a next deep dive module available
+        // Normalize IDs to strings for comparison
+        const currentSiftIndex = learningPath.sifts.findIndex((s: any) => String(s.siftId) === String(id));
+        
+        if (currentSiftIndex !== -1) {
+             const nextSift = learningPath.sifts[currentSiftIndex + 1];
+             // If the next module is a deep dive of the current one, just go there
+             if (nextSift && String(nextSift.parentSiftId) === String(id)) {
+                 router.push(`/sift/${nextSift.siftId}/learn`);
+                 return;
+             }
+        }
+
+        // 2. Otherwise generate a new one
+        setDeepening(true);
+        try {
+            const { siftId } = await generateDeeperModuleAction(learningPath.id, id);
+            toast.success("Deep dive module generated!");
+            router.push(`/sift/${siftId}/learn`);
+        } catch (e) {
+            console.error("Deep dive error:", e);
+            toast.error("Failed to generate deep dive");
+        } finally {
+            setDeepening(false);
+        }
+    };
+
     // Keyboard Shortcuts
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -461,7 +496,29 @@ export default function LearningPathPageClient({ id }: LearningPathPageClientPro
                             <Button size="lg" onClick={() => router.push(`/sift/${id}?review=${sessionId}`)} variant="outline" className="h-12 text-base rounded-xl">
                                 Review
                             </Button>
-                            <Button size="lg" onClick={handleContinueLearning} className="h-12 text-base rounded-xl col-span-2" disabled={continuing}>
+                            
+                            <Button size="lg" onClick={handleDeepDive} variant="outline" className="h-12 text-base rounded-xl" disabled={deepening || continuing}>
+                                {deepening ? (
+                                    <>
+                                        <HugeiconsIcon icon={Loading03Icon} className="h-4 w-4 animate-spin" />
+                                        Generating...
+                                    </>
+                                ) : (
+                                    <>
+                                        <HugeiconsIcon icon={Layers01Icon} className="h-4 w-4" />
+                                        {(() => {
+                                            // Check if next module is already a deep dive
+                                            const currentSiftIndex = learningPath?.sifts?.findIndex((s: any) => s.siftId === id);
+                                            if (currentSiftIndex !== -1 && learningPath?.sifts?.[currentSiftIndex + 1]?.parentSiftId === id) {
+                                                return "Next Deep Dive";
+                                            }
+                                            return "Go Deeper";
+                                        })()}
+                                    </>
+                                )}
+                            </Button>
+
+                            <Button size="lg" onClick={handleContinueLearning} className="h-12 text-base rounded-xl" disabled={continuing || deepening}>
                                 {continuing ? (
                                     <>
                                         <HugeiconsIcon icon={Loading03Icon} className="h-4 w-4 animate-spin" />
@@ -540,7 +597,7 @@ export default function LearningPathPageClient({ id }: LearningPathPageClientPro
                                 <h2 className="text-3xl font-bold text-primary tracking-tight">{section.title}</h2>
                             </div>
                             <div className="prose dark:prose-invert max-w-none">
-                                <Streamdown className="text-base md:text-lg" mode="static">{section.content}</Streamdown>
+                                <Markdown className="text-base md:text-lg" mode="static">{section.content}</Markdown>
                             </div>
                             <div className="flex justify-end pt-6 border-none border-border/50">
                                 <Button onClick={handleNext} className="gap-2 text-base h-12 px-8 rounded-xl shadow-none">
