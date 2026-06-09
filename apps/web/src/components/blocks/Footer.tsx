@@ -155,7 +155,7 @@ export default function Footer() {
             <Link href="/" className="text-foreground/70 hover:text-foreground/80 transition-colors cursor-pointer">About Sift</Link>
             <p className="font-medium text-muted-foreground/50">Version: v{process.env.NEXT_PUBLIC_APP_VERSION}</p>
           </div>
-          <div className="hidden sm:flex">© {new Date().getFullYear()} Sift. All rights reserved.<a href="https://v19.tech/?utm_source=sift&utm_medium=referral&utm_campaign=built_by_v19" target="_blank" rel="noopener noreferrer" className="ml-1 text-inherit opacity-80 underline-offset-2 hover:underline">· Built by V19</a></div>
+          <div className="hidden sm:flex">© {new Date().getFullYear()} Sift. All rights reserved.<a href="https://v19.tech/?utm_source=sift&utm_medium=referral&utm_campaign=built_by_v19" target="_blank" rel="noopener noreferrer" className="ml-1 text-inherit opacity-80 underline-offset-2 hover:underline">Built by V19</a></div>
           <div className="hidden sm:flex items-center gap-4">
             <Link href="/policies/privacy" className="hover:text-foreground/80 transition-colors cursor-pointer">Privacy</Link>
             <Link href="/policies/terms" className="hover:text-foreground/80 transition-colors cursor-pointer">Terms</Link>
