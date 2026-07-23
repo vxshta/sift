@@ -251,7 +251,7 @@ sift/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/Vashishta-Mithra-Reddy/sift.git
+   git clone https://github.com/vxshta/sift.git
    cd sift
    ```
 
@@ -520,8 +520,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Contact & Support
 
-- **GitHub Issues**: [Report bugs or request features](https://github.com/Vashishta-Mithra-Reddy/sift/issues)
-- **Discussions**: [Join the conversation](https://github.com/Vashishta-Mithra-Reddy/sift/discussions)
+- **GitHub Issues**: [Report bugs or request features](https://github.com/vxshta/sift/issues)
+- **Discussions**: [Join the conversation](https://github.com/vxshta/sift/discussions)
 
 ---
 
@@ -529,6 +529,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **[⬆ back to top](#-sift)**
 
-Made with ❤️ by [Vashishta Mithra Reddy](https://github.com/Vashishta-Mithra-Reddy)
+Made with ❤️ by [Vashishta Mithra Reddy](https://github.com/vxshta/)
 
 </div>
